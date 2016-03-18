@@ -1,0 +1,140 @@
+<h2>Add a person</h2>
+
+<form name="createPerson" class="form-inline" ng-submit="createPerson.$valid && addPerson()" novalidate>
+  <div class="form-group" id="formName">
+    <label class="sr-only" for="pname">Name</label>
+    <input type="text" class="form-control" ng-model="person.name" id="pname" placeholder="Name" required>
+  </div>
+  <div class="form-group" id="formGender">
+    <label class="sr-only" for="pgender">Gender</label>
+    <select class="form-control" ng-model="person.gender" id="pgender"
+            ng-options="gender for gender in ['Male', 'Female']" title="Gender" required>
+      <option value>Gender</option>
+    </select>
+  </div>
+  <div class="form-group" id="formAge">
+    <label class="sr-only" for="page">Age</label>
+    <input name="personAge" type="number" class="form-control" ng-model="person.age" id="page"
+           placeholder="Age" min="18" max="75" required>
+  </div>
+  <button type="submit" class="btn btn-default pull-right" ng-click="MainCtrl.addClick=!MainCtrl.addClick">
+    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+</form>
+<br>
+
+
+<!--Alert messages for validation-->
+
+    <div class="alert alert-danger" role="alert"
+         ng-if="createPerson.$dirty && createPerson.$invalid && MainCtrl.addClick">
+        All field must be filled</div>
+    <div class="alert alert-danger" role="alert"
+         ng-if="createPerson.personAge.$dirty && createPerson.personAge.$invalid && createPerson && MainCtrl.addClick">
+        Age must be between 18 and 75</div>
+    <br>
+
+
+<form name="pUpdate"> <!--Wrapping whole table for update validation-->
+
+  <table class="table table-striped">
+    <!--Table head with interactive icons-->
+    <thead>
+    <tr>
+      <th><button type="button" class="btn btn-default" ng-click="order('name')">Name
+        <span class="glyphicon glyphicon-sort" ng-show="predicate !='name'" ng-class="{reverse:reverse}"></span>
+        <span class="glyphicon glyphicon-sort-by-attributes" ng-show="predicate ==='name'&& !reverse" ></span>
+        <span class="glyphicon glyphicon-sort-by-attributes-alt" ng-show="predicate ==='name'&& reverse" ></span>
+      </button>
+      </th>
+      <th><button type="button" class="btn btn-default" ng-click="order('gender')">Gender
+        <span class="glyphicon glyphicon-sort" ng-show="predicate !='gender'" ng-class="{reverse:reverse}"></span>
+        <span class="glyphicon glyphicon-sort-by-attributes" ng-show="predicate ==='gender'&& !reverse" ></span>
+        <span class="glyphicon glyphicon-sort-by-attributes-alt" ng-show="predicate ==='gender'&& reverse" ></span>
+        <span class="sortorder" ng-show="predicate === 'gender'" ng-class="{reverse:reverse}"></span>
+      </button>
+      </th>
+
+      <th><button type="button" class="btn btn-default" ng-click="order('age')">Age
+        <span class="glyphicon glyphicon-sort" ng-show="predicate !='age'" ng-class="{reverse:reverse}"></span>
+        <span class="glyphicon glyphicon-sort-by-attributes" ng-show="predicate ==='age'&& !reverse" ></span>
+        <span class="glyphicon glyphicon-sort-by-attributes-alt" ng-show="predicate ==='age'&& reverse" ></span>
+      </button>
+        <span class="sortorder" ng-show="predicate === 'age'" ng-class="{reverse:reverse}"></span></th>
+      <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="person in filteredPersons | orderBy:predicate:reverse">
+
+        <!--Name cell-->
+      <td class="tname">
+        <div ng-hide="updatePerson[person.id]">{{person.name}}</div>
+        <div ng-show="updatePerson[person.id]"><input type="text" class="form-control" ng-model="person.name"
+                                                      required></div>
+      </td>
+      <!--Gender cell-->
+      <td class="tgender">
+        <div ng-hide="updatePerson[person.id]">{{person.gender}}</div>
+        <div ng-show="updatePerson[person.id]">
+          <select class="form-control" ng-model="person.gender" ng-options="gender for gender in ['Male', 'Female']"
+                  required>
+          </select>
+        </div>
+      </td>
+      <!--Age cell-->
+      <td class="tage">
+        <div ng-hide="updatePerson[person.id]">{{person.age}}</div>
+        <div ng-show="updatePerson[person.id]"><input type="number" class="form-control" ng-model="person.age"
+                                                      required min="18" max="75"></div>
+      </td>
+
+      <!--Control buttons-->
+      <td class="text-right">
+        <div class="btn-group flex-btn-group-container">
+
+          <button type="button" class="btn btn-default" ng-hide="updatePerson[person.id]" ng-click="modify(person)">
+            <span class="glyphicon glyphicon-pencil"></span></button>
+          <button type="button" class="btn btn-link" ng-show="updatePerson[person.id]" ng-click="update(person)"
+                  ng-disabled="pUpdate.$invalid"> <!--active only if all fields are valid-->
+            <span class="glyphicon glyphicon-pencil"></span></button>
+
+          <button type="button"  ng-click="open(person)"
+                  class="btn btn-default btn-del">
+            <span class="glyphicon glyphicon-remove"></span>
+          </button>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</form>
+
+<!--Pagination-->
+<div class="text-center">
+    <uib-pagination total-items="persons.length" ng-model="currentPage" items-per-page="5" max-size="maxSize"
+                    class="pagination-sm" boundary-link-numbers="true"></uib-pagination>
+</div>
+
+
+<!--Modal confirmation-->
+
+<script type="text/ng-template" id="myModalContent.html">
+    <div class="modal-body">
+        <form name="deleteForm">
+            <div class="modal-body text-center">
+                <h1>Remove person</h1>
+                <br>
+                <p>Are you sure you want to remove this entry?</p>
+                <br>
+                <button type="button" class="btn btn-confirm" ng-click="cancel()">
+                    CANCEL
+                </button>
+                <button type="button" class="btn btn-confirm" ng-click="ok()">
+                    YES
+                </button>
+            </div>
+            <br>
+        </form>
+    </div>
+</script>
